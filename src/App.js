@@ -9,7 +9,19 @@ import ToyContainer from './components/ToyContainer'
 class App extends React.Component{
 
   state = {
-    display: false
+    display: false,
+    toys: []
+  }
+
+  componentDidMount() {
+    fetch('http://localhost:3001/toys') 
+    .then(response => response.json())
+    .then(data =>{
+      this.setState({
+        ...this.state,
+        toys: data
+      })
+    })
   }
 
   handleClick = () => {
@@ -19,20 +31,33 @@ class App extends React.Component{
     })
   }
 
+  handleAddedNewToy = (newToy) => {
+    newToy.like = 0
+    fetch('http://localhost:3001/toys', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }, body: JSON.stringify(newToy)
+    })
+    .then(response => {response.json()})
+    .then(newToy => this.setState({data: [...this.state.data, newToy]}))
+  }
+
   render(){
     return (
       <>
         <Header/>
         { this.state.display
             ?
-          <ToyForm/>
+          <ToyForm addedNewToy={this.handleAddedNewToy}/>
             :
           null
         }
         <div className="buttonContainer">
           <button onClick={this.handleClick}> Add a Toy </button>
         </div>
-        <ToyContainer/>
+        <ToyContainer toys={this.state.toys} />
       </>
     );
   }
